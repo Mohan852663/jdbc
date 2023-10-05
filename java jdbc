@@ -1,0 +1,301 @@
+package ranks;
+import java.sql.*;
+
+public class students {
+
+	public static void main(String[] args) throws Exception {
+		
+		batchdemo1();  
+		
+	}
+		//read database
+	public static void readRecords()throws Exception{
+		
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		String query = "select * from students";
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		
+		while(rs.next()) {
+			System.out.println(rs.getInt(1)+" - "+rs.getString(2)+" - "+rs.getFloat(3));
+		}
+		
+		con.close();
+	}
+	//insert with hardcoding
+	public static void insertRecords()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		String query = "insert into students values(5,'ramesh',8.9)";
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		int rows = st.executeUpdate(query);
+		
+		System.out.println("Number of rows affected : "+rows);
+		con.close();
+		
+	}
+	//insert with variable
+	public static void insertvar()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		
+		int id = 6;
+		String name = "mohan";
+		float percentage =  9.2f;
+		String query = "insert into students values("+id+",'"+name+"',"+percentage+");";
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		int rows = st.executeUpdate(query);
+		
+		System.out.println("Number of rows affected : "+rows);
+		con.close();
+	
+	}
+	//using prepared statement 
+	public static void preparedRecord()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		
+		int id = 7;
+		String name = "mark";
+		float percentage =  8.5f;
+		//insert into students values(7,'mark',8.5)
+		String query = "insert into students values (?,?,?)";
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		PreparedStatement pst = con.prepareStatement(query);
+		pst.setInt(1,id);
+		pst.setString(2,name);
+		pst.setFloat(3,percentage);
+		int rows = pst.executeUpdate();
+		
+		System.out.println("number of rows affected : "+rows);
+		
+		con.close();
+	
+	}
+	//delete records 
+	public static void deleteRecords()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		
+		int id = 5;
+		String query ="delete from students where id ="+id; 
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		int rows = st.executeUpdate(query);  //same update query all are same
+		
+		System.out.println("Number of rows affected : "+rows);
+		con.close();
+	
+	}
+	//update record 
+	public static void updateRecords()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		//query
+		String query ="update students set gpa = 9.2 where id=4"; 
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		int rows = st.executeUpdate(query);  //same update query all are same
+		
+		System.out.println("Number of rows affected : "+rows);
+		con.close();
+	
+	}
+	
+	/*
+	 * types of statements in jdbc
+	 * 1.create statement
+	 * 2.prepared statement
+	 * 3.callable statament
+	 * 
+	 */
+	//calling  simple stored procedure
+	
+	public static void callable()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		
+		Connection con = DriverManager.getConnection(url,userName,password);
+		CallableStatement cst = con.prepareCall("{call Getstd()}");
+		ResultSet rs = cst.executeQuery();
+		
+		while(rs.next()) {
+			System.out.println(rs.getInt(1)+" - "+rs.getString(2)+" - "+rs.getFloat(3));
+		}  
+		con.close();
+	}	
+	
+	//calling stored  procedure with parameter 
+	
+	public static void callable2()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		int id = 3;
+		Connection con = DriverManager.getConnection(url,userName,password);
+		CallableStatement cst = con.prepareCall("{call Getstdid(?)}");
+		cst.setInt(1,id);
+		ResultSet rs = cst.executeQuery();
+		
+		while(rs.next()) {
+			System.out.println(rs.getInt(1)+" - "+rs.getString(2)+" - "+rs.getFloat(3));
+		}
+		
+		con.close();
+	}	
+	
+	public static void callable3()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		int id = 3;
+		Connection con = DriverManager.getConnection(url,userName,password);
+		CallableStatement cst = con.prepareCall("{call detnamebtid(?,?)}");
+		cst.setInt(1,id);
+		cst.registerOutParameter(2, Types.VARCHAR);
+		
+		cst.executeUpdate();
+		
+		System.out.println(cst.getString(2));
+		
+		
+		con.close();
+	}	
+	
+	//commit and Auto commite
+	
+	public static void commitdemo()throws Exception{
+
+		String url = "jdbc:mysql://localhost:3306/ranks";
+		String userName = "root";
+		String password = "root";
+		
+		String query1 = "update students set gpa = 5.5 where id = 1";
+		String query2 = "update students set gpa = 5.5 where id = 2";
+				
+		Connection con = DriverManager.getConnection(url,userName,password);
+		Statement st = con.createStatement();
+		int row1 = st.executeUpdate(query1);
+		System.out.println("row affectes : "+row1);
+		int row2 = st.executeUpdate(query2);
+		System.out.println("row affectes : "+row1);
+		con.close();
+	}	
+	
+	//commit and Auto commite
+	
+		public static void commitdemo1()throws Exception{
+
+			String url = "jdbc:mysql://localhost:3306/ranks";
+			String userName = "root";
+			String password = "root";
+			
+			String query1 = "update students set gpa = 7.0 where id = 1";
+			String query2 = "updat students set gpa = 7.0 where id = 2";
+					
+			Connection con = DriverManager.getConnection(url,userName,password);
+			//set the commite
+			con.setAutoCommit(false);
+			
+			Statement st = con.createStatement();
+			int row1 = st.executeUpdate(query1);
+			System.out.println("row affectes : "+row1);
+			int row2 = st.executeUpdate(query2);
+			System.out.println("row affectes : "+row1);
+			
+			//commit
+			if(row1>0 && row2>0)
+				con.commit();
+			
+			
+			con.close();
+		}	
+		
+		//patch processing
+		
+		public static void batchdemo()throws Exception{
+
+			String url = "jdbc:mysql://localhost:3306/ranks";
+			String userName = "root";
+			String password = "root";
+			
+			String query1 = "update students set gpa = 5.0 where id = 1";
+			String query2 = "update students set gpa = 5.0 where id = 2";
+			String query3 = "update students set gpa = 5.0 where id = 3";
+			String query4 = "update students set gpa = 5.0 where id = 4";
+					
+			Connection con = DriverManager.getConnection(url,userName,password);
+			Statement st = con.createStatement();
+			st.addBatch(query1);
+			st.addBatch(query2);
+			st.addBatch(query3);
+			st.addBatch(query4);
+			
+			int[] res = st.executeBatch();
+			
+			for (int i:res) {
+				System.out.println("rows affected :"+i);	
+			}
+			
+			con.close();
+		}	
+		
+		//patch processing commit
+		
+				public static void batchdemo1()throws Exception{
+
+					String url = "jdbc:mysql://localhost:3306/ranks";
+					String userName = "root";
+					String password = "root";
+					
+					String query1 = "update students set gpa = 9.0 where id = 1";
+					String query2 = "update students set gpa = 9.0 where id = 2";
+					String query3 = "update students set gpa = 9.0 where id = 3";
+					String query4 = "updat students set gpa = 9.0 where id = 4";
+							
+					Connection con = DriverManager.getConnection(url,userName,password);
+					con.setAutoCommit(false);
+					Statement st = con.createStatement();
+					st.addBatch(query1);
+					st.addBatch(query2);
+					st.addBatch(query3);
+					st.addBatch(query4);
+					
+					int[] res = st.executeBatch();
+					
+					for (int i:res) {
+						if(i>0)
+							continue;
+						else
+							con.rollback();
+					}
+					con.commit();
+					con.close();
+				}	
+
+}
